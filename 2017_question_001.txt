@@ -1,0 +1,51 @@
+1. “The architectures of OLAP data warehouses differ significantly from those of database systems supporting OLTP”
+
+(a) Briefly describe the requirements for a data warehouse architecture.
+
+Separation
+The architecture should keep OLAP and OLTP applications apart as much as possible
+    
+Scalability
+The architecture should enable easy upgrade of hardware and software as data volumes and users’ requirements increase
+
+Extensibility
+The architecture should allow new applications and technologies to be incorporated incrementally
+
+Security
+Access to the data must be monitored and controlled as a valuable resource
+
+Administration
+Systems and tools must be provided which support the management of the data warehouse
+
+(b) Many data warehouses follow a two-layer architecture.
+    Explain what is separated in a two-level architecture and the advantages of this separation.
+
+Two-layer architecture separates operational and external data from data warehouse data.
+
+Advantages of this separation include the following points of independence from the OLTP and external data.
+
+1. Availability; The data warehouse remains accessible independently of external data source availability
+2. Performance; The workload of the data warehouse doesn't impact nor is it impacted by the OLTP
+3. Logical design; The logical design decisions for the data warehouse do not impact the OLTP
+4. Data granularity; The level of detailed used for data warehouse e.g. time granularity is independent of the OLTP
+5. Physical model and optimization techniques; The physical model and any associated optimization techniques will be independent of the OLTP
+
+(c) A three-layer architecture for data warehouses is also commonly found.
+    Explain how this differs from a two-level architecture.
+
+In this architecture, a reconciled data store (layer) sits between the operational/external data layer and the data warehouse.
+
+The ETL operations that would import data to the data warehouse will target this reconciled data store instead.
+
+This layer acts as a reference data model which may itself be a data warehouse supporting queries. Typically it will be highly normalized and represent a common reference model for an enterprise. 
+
+The reconciled data store acts as a data source for a non-normalized data warehouse which has been designed for efficient support of OLAP and data mining queries. 
+
+(d) Data marts are often used in both two and three layer architectures.
+    Explain what a data mart is, the two main approaches to building a data mart and the advantages of each.
+
+A data mart is a subset of a data warehouse, designed for use by one part of an organization.
+
+The first approach is to build independent data marts, which reduce the initial setup time and enable incremental integration of the data mart in the data warehouse.
+
+The second approach is to use a bus architecture, perform up-front analysis to ensure the meaning of dimensions and attributes are the same across all other data marts (and data warehouse). Although a slower approach, the organization does benefit from a well-analysed enterprise wide data model.
