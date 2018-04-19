@@ -1,2 +1,2 @@
-# DWHDM_Past_Papers
+# DWHDM Past Papers
 Past papers and exam attempts
