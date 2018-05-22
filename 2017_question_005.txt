@@ -1,0 +1,58 @@
+5. (a)
+SQL:1999 introduced the WITH clause which can be useful in OLAP queries. Ex- plain what the advantages are of using this clause, and give an example SQL query illustrating its use.
+
+The WITH clause provides the following advantages:
+1 - code is simplified as repeated query expression code can be stored just once in the WITH clause
+2 - removal of duplicate code reduces the chances of errors being introduced
+3 - Repeated reference to the table defined with the WITH clause can potentially be optimised
+
+EXAMPLE CODE NOT USING THE WITH STATEMENT
+SELECT U.UKAREA, SUM(UKR.UKVOTES) AS "TOTAL VOTE", ROUND(100 * SUM(UKR.UKVOTES) / U.UKELECTORS, 2) AS TURNOUT
+    FROM UKCONSTS U
+    INNER JOIN UKRESULTS UKR ON UKR.UKNUM = U.UKNUM
+    GROUP BY U.UKAREA, U.UKELECTORS
+    HAVING SUM(UKR.UKVOTES) < 0.65 * U.UKELECTORS
+    ORDER BY TURNOUT;
+
+EXAMPLE CODE USING THE WITH STATEMENT
+
+WITH TOTAL_CONST_VOTES AS (
+SELECT UKNUM, SUM(UKVOTES) AS SUM_UKVOTES
+    FROM UKRESULTS
+    GROUP BY UKNUM)
+
+SELECT U.UKAREA, SUM_UKVOTES AS "TOTAL VOTE", ROUND(((SUM_UKVOTES/UKELECTORS) * 100), 2) AS TURNOUT
+    FROM UKCONSTS U
+    INNER JOIN TOTAL_CONST_VOTES CC ON CC.UKNUM = U.UKNUM
+    WHERE (SUM_UKVOTES/UKELECTORS) < 0.65
+    ORDER BY TURNOUT;
+
+-- Or Use this one from Exercise 2
+-- Q 4 ii
+-- In which month in 1998 did store 12 have the highest total sales receipts? Display
+-- the month and the total sales receipts for that month.
+WITH STORE_12_1998_SALES AS
+(
+    SELECT THE_MONTH, UNIT_SALES_FOR_MONTH
+    FROM
+    (
+        SELECT THE_MONTH, SUM(UNIT_SALES) AS UNIT_SALES_FOR_MONTH
+            FROM SALES_FACT_1998 SF
+                INNER JOIN time_by_day tbd ON tbd.TIME_ID = SF.TIME_ID
+            WHERE STORE_ID = 12
+            GROUP BY THE_MONTH
+        UNION ALL
+        SELECT THE_MONTH, SUM(UNIT_SALES) AS UNIT_SALES_FOR_MONTH
+            FROM SALES_FACT_DEC_1998 SF2
+                INNER JOIN time_by_day tbd ON tbd.TIME_ID = SF2.TIME_ID
+            WHERE STORE_ID = 12
+            GROUP BY THE_MONTH
+    )
+)
+
+SELECT THE_MONTH, UNIT_SALES_FOR_MONTH
+    FROM STORE_12_1998_SALES S1
+    WHERE S1.UNIT_SALES_FOR_MONTH = (
+        SELECT MAX(S2.UNIT_SALES_FOR_MONTH)
+            FROM STORE_12_1998_SALES S2
+    );

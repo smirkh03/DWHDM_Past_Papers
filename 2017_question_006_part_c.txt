@@ -1,0 +1,11 @@
+6.
+
+(c) One approach supporting a more efficient way of identifying frequent itemsets is to use a FP-tree. Explain why the FP-tree approach is more efficient than A-Priori, what a FP-tree is, and how it is built given a set of transactions. (You do not need to draw out the tree structure which results.)
+
+Alternative approach to Aprori which uses a tree structure which holds frequent itemsets in a compressed form in a prefix-tree structure known as an Frequent Pattern-tree.
+
+Using this, only two database scans are needed to identify all frequent itemsets:
+1. The first scan identifies frequent items
+2. The second scan builds the FP-tree in which each path from the root represents a frequent itemset
+
+FP-growth then processes the FP-tree to identify frequent itemsets.

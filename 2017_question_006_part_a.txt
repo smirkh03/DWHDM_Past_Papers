@@ -1,0 +1,20 @@
+6. The A-Priori algorithm is one method used in association rule mining.
+
+(a) Explain what association rule mining is and how confidence and support measures
+are defined and used to identify interesting rules
+
+Association rule mining searches for interesting relationships between data items in a set of samples.
+
+The classic application is market basket analysis: find items that are frequently purchased together by a customer.
+
+Not all rules are interesting: for example, they may be based on a statistically insignificant number of occurrences in the set of samples.
+
+Interesting rules may be identified by checking that the rule has some minimum confidence and support.
+
+Given two items A and B, confidence for the rule "items who bought item A also bought item B" (A -> B) is defined as:
+
+(number of transactions containing A and B) / (number of transactions containing A)
+
+Support for the rule A -> B is defined as:
+
+(number of transactions containing A and B) / (total number of transaction)
