@@ -1,0 +1,84 @@
+4.
+
+(a) There are three main architectures for OLAP systems depending on the underlying database technology: ROLAP, MOLAP and HOLAP. Briefly explain the characteristics of each of these noting any particular strengths or weaknesses.
+
+ROLAP: Relational OLAP use a conventional relational database for data storage.
+       They use fact and dimension tables following a star, snowflake or more complex schema.
+       Queries are translated into one or more SQL queries, which are submitted to the relational database.       
+       These systems are not optimised for support of CUBE operations, however they do offer interoperability and services of relational databases. 
+
+MOLAP: Multidimensional OLAP is based on providing OLAP services on proprietary data structures designed for efficient support of CUBE operations.
+       These systems lack support for conventional relation data, we well as typically having limited support for wider system functions e.g. concurrency and recovery.
+        Also system interoperability may be limited given the proprietary formats involved. 
+
+HOLAP: Hybrid OLAP support both relational (for non aggregate data) and multidimensional (for aggregated data) data storage.
+
+
+(b) Consider the tables of the warehouse described in Question 3:
+    STORE (STORE ID, POSTCODE, CITY, REGION)
+    PRODUCT (PRODUCT ID, PRODUCT NAME, PRODUCT TYPE)
+    TIME (TIME ID, YEAR, WEEK, DAY)
+    STORE PRODUCT SALES (TIME ID, STORE ID, PRODUCT ID, STORE SALES, STORE COST, UNIT SALES)
+
+Explain how the OLAP operations of slice, dice and roll-up are achieved using SQL in a ROLAP system. Explain what the effect of each of these operations is, giving an example SQL query in each case for the sales data above.
+
+SLICE: Produces a sub-cube by performing a selection on one dimension e.g. 
+	SELECT SPS.*
+	FROM "STORE PRODUCT SALES" SPS
+		INNER JOIN PRODUCT P ON P."PRODUCT ID" = SPS."PRODUCT ID"
+	WHERE P."PRODUCT TYPE" = "SPORT"
+
+DICE: Produces a sub-cube by performing a selection on more than one dimension e.g.
+	SELECT SPS.*
+	FROM "STORE PRODUCT SALES" SPS
+		INNER JOIN PRODUCT P ON P."PRODUCT ID" = SPS."PRODUCT ID"
+		INNER JOIN STORE S ON S."STORE ID" = SPS."STORE ID"
+	WHERE P."PRODUCT TYPE" = "SPORT"
+		AND S.CITY = "LONDON"
+ROLLUP: Aggregates measure values within a cube either by aggregating at a higher level in the hierarchy underpinning a dimension, or removing one or more dimensions
+	SELECT 	SPS."STORE ID",
+		SPS."PRODUCT ID", SUM(SPS."UNIT SALES"), GROUPING(SPS."STORE ID") AS G_STORE_ID, GROUPING(SPS."PRODUCT ID") AS G_PRODUCT_ID
+	FROM "STORE PRODUCT SALES" SPS
+	GROUP BY ROLLUP(SPS."STORE ID", SPS."PRODUCT ID")
+	ORDER BY SPS."STORE ID", SPS."PRODUCT ID"
+
+
+(c) SQL:1999 introduced the ROLLUP and CUBE extensions to GROUP BY.
+    Explain what extra capabilities each extension supports, illustrating your answer with an example SQL query in each case for the sales data above
+
+ROLLUP: Produces subtotals from right to left and a grand total. If "n" is the number of columns listed in the ROLLUP, there will be n + 1 levels of subtotals. The total and subtotals rows are known as Super Aggregate Rows (SAR) and the contain NULL values for columns not participating in the total. In order to distinguish real NULLs and NULLs due to SAR rows, the GROUPING function is used which returns 1 if the column has a NULL value in a SAR and 0 if it hasn't.
+
+	SELECT 	SPS."STORE ID",
+		SPS."PRODUCT ID", SUM(SPS."UNIT SALES") AS SUM_SALES, GROUPING(SPS."STORE ID") AS G_STORE_ID, GROUPING(SPS."PRODUCT ID") AS G_PRODUCT_ID
+	FROM "STORE PRODUCT SALES" SPS
+	GROUP BY ROLLUP(SPS."STORE ID", SPS."PRODUCT ID")
+	ORDER BY SPS."STORE ID", SPS."PRODUCT ID"
+
+	STORE ID	PRODUCT ID	SUM_SALES	G_STORE_ID	G_PRODUCT_ID
+	1		1		10		0		0
+	1		2		20		0		0
+	1				30		0		1
+	2		1		10		0		0
+	2		2		20		0		0
+	2				30		0		1
+					60		1		1
+
+CUBE: Produces subtotals (super aggregate rows) for all combinations of the dimensions specified in the CUBE statement.
+
+	SELECT 	SPS."STORE ID",
+		SPS."PRODUCT ID", SUM(SPS."UNIT SALES") AS SUM_SALES, GROUPING(SPS."STORE ID") AS G_STORE_ID, GROUPING(SPS."PRODUCT ID") AS G_PRODUCT_ID
+	FROM "STORE PRODUCT SALES" SPS
+	GROUP BY CUBE(SPS."STORE ID", SPS."PRODUCT ID")
+	ORDER BY SPS."STORE ID", SPS."PRODUCT ID"
+
+	STORE ID	PRODUCT ID	SUM_SALES	G_STORE_ID	G_PRODUCT_ID
+	1		1		10		0		0
+	1		2		20		0		0
+	1				30		0		1
+	2		1		10		0		0
+	2		2		20		0		0
+	2				30		0		1
+			1		20		1		0
+			2		40		1		0
+					60		1		1
+	
